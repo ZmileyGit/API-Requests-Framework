@@ -15,23 +15,20 @@ class APIC_EMTokenGenerator(TokenGenerator):
     def __init__(self,server,credentials):
         super().__init__(server)
         self.credentials = credentials
-    def _request(self,ssl_context=None):
+    def _request(self,ssl_context=None,certificate_check=None):
         request = JSONRequestBuilder(self.server)
         request.method = HTTPMethod.POST.value
-        if ssl_context:
-            request.context = ssl_context
-            request.certificate_check = None
+        if certificate_check is not None:
+            request.certificate_check = certificate_check
         request.resource = APIC_EM_Settings.TICKET_URI
         request.data = {
             "username" : self.credentials.username,
             "password" : self.credentials.password
         }
         request = request.build()
+        request.context = ssl_context if ssl_context else request.context
         return request
     def generate(self,**kwargs):
         request = self._request(**kwargs)
-        print(request.url)
-        print(request.headers.as_dict())
-        print(request.method)
         response = request.send()
         return TokenResponseHandler.handler_chain().handle_response(response)

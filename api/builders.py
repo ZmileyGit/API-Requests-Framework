@@ -13,7 +13,7 @@ class RequestBuilder(ABC):
         self.queries = Queries.instance()
         self.method = HTTPMethod.GET.value
         self.data = None
-        self.context = create_default_context(purpose=Purpose.SERVER_AUTH)
+        self._context = create_default_context(Purpose.SERVER_AUTH)
         self.certificate_check = True
     def reset(self):
         self.resource = Settings.DEFAULT_RESOURCE_PATH
@@ -21,12 +21,14 @@ class RequestBuilder(ABC):
         self.queries = Queries.instance()
         self.method = HTTPMethod.GET.value
         self.data = None
-        self.context = create_default_context(purpose=Purpose.SERVER_AUTH)
+        self._context = create_default_context(Purpose.SERVER_AUTH)
         self.certificate_check = True
+    @property
+    def context(self):
+        return self._context
     def _prepare_context(self):
-        if self.certificate_check is not None:
-            self.context.check_hostname = self.certificate_check
-            self.context.verify_mode = CERT_REQUIRED if self.certificate_check else CERT_NONE
+        self._context.check_hostname = self.certificate_check
+        self._context.verify_mode = CERT_REQUIRED if self.certificate_check else CERT_NONE
     def season(self):
         self._prepare_context()
     @abstractmethod

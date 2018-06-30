@@ -16,9 +16,14 @@ class ResponseHandler(ABC):
             return self.process(response)
         elif self.next_handler:
             return self.next_handler.handle_response(response,default)
-        elif default:
+        elif default is not None:
             return default
         raise UnexpectedResponseError()
+
+class InvalidRequestHandler(ResponseHandler):
+    def is_processable(self,response):
+        document = response.document
+        return response.code == 400 and document and 'response' in document and 'errorCode' in document['response'] and document['response']['errorCode'] == 'Bad request'
 
 class TokenResponseHandler(ResponseHandler):
     @staticmethod

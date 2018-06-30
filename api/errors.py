@@ -6,3 +6,6 @@ class APIAuthenticationError(APIError):
 
 class UnexpectedResponseError(APIError):
     pass
+
+class InvalidRequestError(APIError):
+    pass
