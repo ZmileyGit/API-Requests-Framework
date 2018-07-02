@@ -9,3 +9,6 @@ class UnexpectedResponseError(APIError):
 
 class InvalidRequestError(APIError):
     pass
+
+class UnknownResourceError(APIError):
+    pass

@@ -12,6 +12,18 @@ class HTTPMethod(Enum):
     PUT = "PUT"
     DELETE = "DELETE"
 
+class Operator(Enum):
+    AND = 'AND'
+    OR = 'OR'
+
+class Comparator(Enum):
+    EQ = 'EQ'
+    NEQ = 'NEQ'
+    LT = 'LT'
+    GT = 'GT'
+    LTE = 'LTE'
+    GTE = 'GTE'
+
 class Server:
     def __init__(self,protocol:str,ip:str,port:int):
         self.protocol = protocol

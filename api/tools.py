@@ -1,5 +1,4 @@
-from api.handlers import ValidationResponseHandler,TokenResponseHandler
-from api.entities import Server,HTTPMethod
+from api.entities import Server,HTTPMethod,Operator,Comparator
 from api.constants import Settings,Headers
 import re
 
@@ -21,3 +20,27 @@ class RequestTools:
                 if regex:
                     return regex.group(1)
         return Settings.DEFAULT_ENCODING
+
+class EnumBooleanOperations:
+    @staticmethod
+    def compare(value,against,op:Comparator):
+        if op == Comparator.EQ:
+            return value == against
+        elif op == Comparator.NEQ:
+            return value != against
+        elif op == Comparator.GT:
+            return value > against
+        elif op == Comparator.LT:
+            return value < against
+        elif op == Comparator.GTE:
+            return value >= against
+        elif op == Comparator.LTE:
+            return value <= against
+        raise ValueError()
+    @staticmethod
+    def join(left,right,op:Operator):
+        if op == Operator.AND:
+            return left and right
+        elif op == Operator.OR:
+            return left or right
+        raise ValueError()

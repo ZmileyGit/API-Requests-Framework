@@ -1,5 +1,9 @@
 from api.errors import UnexpectedResponseError,APIAuthenticationError
 from api.responses import Response
+from api.tools import EnumBooleanOperations
+from api.entities import Comparator,Operator
+from api.conditioners import HTTPCodeConditioner,APICEMTokenConditioner,APICEMInvalidCredentialsConditioner
+from api.conditioners import APICEMInvalidRequestConditioner
 from abc import ABC,abstractmethod
 
 class ResponseHandler(ABC):
@@ -22,26 +26,32 @@ class ResponseHandler(ABC):
 
 class InvalidRequestHandler(ResponseHandler):
     def is_processable(self,response):
-        document = response.document
-        return response.code == 400 and document and 'response' in document and 'errorCode' in document['response'] and document['response']['errorCode'] == 'Bad request'
+        return HTTPCodeConditioner(400,next_conditioner=APICEMInvalidRequestConditioner()).process(response)
 
 class TokenResponseHandler(ResponseHandler):
     @staticmethod
     def handler_chain():
-        return SuccessfulTokenRetrievalHandler(
-            InvalidCredentialsHandler())
+        return InvalidCredentialsHandler(
+            SuccessfulTokenRetrievalHandler()
+        )
 
 class InvalidCredentialsHandler(TokenResponseHandler):
     def process(self,response):
         raise APIAuthenticationError()
     def is_processable(self,response):
-        return response.code == 401 and response.document and 'response' in response.document and 'errorCode' in response.document['response']
+        return HTTPCodeConditioner(
+            401,
+            next_conditioner=APICEMInvalidCredentialsConditioner()
+        ).process(response)
 
 class SuccessfulTokenRetrievalHandler(TokenResponseHandler):
     def process(self,response):
         return response.document['response']['serviceTicket']
     def is_processable(self,response):
-        return response.code == 200 and response.document and 'response' in response.document and 'serviceTicket' in response.document['response']
+        return HTTPCodeConditioner(
+            200,
+            next_conditioner=APICEMTokenConditioner()
+        ).process(response)
 
 class ValidationResponseHandler(ResponseHandler):
     @staticmethod
@@ -54,10 +64,10 @@ class SuccesfulValidationHandler(ValidationResponseHandler):
     def process(self,response):
         return True
     def is_processable(self,response):
-        return response.code == 200
+        return HTTPCodeConditioner(200).process(response)
 
 class UnsuccessfulValidationHandler(ValidationResponseHandler):
     def process(self,response):
         return False
     def is_processable(self,response):
-        return response.code != 200
+        return HTTPCodeConditioner(200,comparator=Comparator.NEQ).process(response)
