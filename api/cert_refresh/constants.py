@@ -9,7 +9,7 @@ class Messages:
 
 
 class Prompts: 
-    COMMON_PROMP_TEMPLATE = "{message}: "
+    COMMON_PROMPT_TEMPLATE = "{message}: "
     IP_ADDRESS_PROMPT = "IP Address"
     USERNAME_PROMPT = "Username"
     PASSWORD_PROMPT = "Password"

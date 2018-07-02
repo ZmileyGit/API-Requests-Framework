@@ -15,7 +15,7 @@ from time import sleep
 ip = ""
 while not (isinstance(ip,IPv4Address)):
     try:
-        ip = input(Prompts.COMMON_PROMP_TEMPLATE.format(message=Prompts.IP_ADDRESS_PROMPT))
+        ip = input(Prompts.COMMON_PROMPT_TEMPLATE.format(message=Prompts.IP_ADDRESS_PROMPT))
         ip = ip.strip()
         ip = ip_address(ip)
     except ValueError as err:
@@ -25,8 +25,8 @@ server = HTTPSServer(str(ip))
 token = None
 while not token:
     try:
-        username = input(Prompts.COMMON_PROMP_TEMPLATE.format(message=Prompts.USERNAME_PROMPT))
-        password = getpass.getpass(Prompts.COMMON_PROMP_TEMPLATE.format(message=Prompts.PASSWORD_PROMPT))
+        username = input(Prompts.COMMON_PROMPT_TEMPLATE.format(message=Prompts.USERNAME_PROMPT))
+        password = getpass.getpass(Prompts.COMMON_PROMPT_TEMPLATE.format(message=Prompts.PASSWORD_PROMPT))
         credentials = Credentials(username,password)
         token = APIC_EMTokenGenerator(server,credentials).generate(certificate_check=Settings.VERIFY_SERVER_CERTIFICATE)
     except APIAuthenticationError as err:
@@ -37,7 +37,7 @@ builder = APIC_EMDecorator(builder,credentials)
 
 device = None
 while not device:
-    serial_number = input(Prompts.COMMON_PROMP_TEMPLATE.format(message=Prompts.SN_PROMPT))
+    serial_number = input(Prompts.COMMON_PROMPT_TEMPLATE.format(message=Prompts.SN_PROMPT))
     builder.reset()
     builder.resource = '/api/v1/network-device/serial-number/{serial_number}'.format(serial_number=serial_number)
     builder.method = HTTPMethod.GET.value
