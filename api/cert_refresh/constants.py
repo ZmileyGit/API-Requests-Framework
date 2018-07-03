@@ -1,6 +1,6 @@
 class Messages:
     ERROR_MESSAGE_TEMPLATE = "\n|{message}|\n"
-    COMMON_MESSAGE_TEMPLATE = '\n+ {message}'
+    COMMON_MESSAGE_TEMPLATE = '+ {message}\n'
     WELCOME_MESSAGE = "Manual Certificate Renewal Script"
     APIC_EM_DATA_COLLECTION_MESSAGE = "Collecting APIC-EM's Basic Data"
     INVALID_IP_ADDRESS_MESSAGE = "Please type in a valid IPv4 address"
@@ -19,6 +19,16 @@ class Messages:
     DOWNLOADING_PKCS12_MESSAGE = 'Downloading PKCS12 file for {device}'
     STORED_PKCS12_MESSAGE = 'Stored successfully {file} with password {password}'
     SEARCHING_TRUST_POINT_MESSAGE = 'Searching trust point related to {device}'
+    @staticmethod
+    def log_message(message):
+        log = Messages.COMMON_MESSAGE_TEMPLATE.format(message=message)
+        print(log)
+        return log
+    @staticmethod
+    def log_error(message):
+        log = Messages.ERROR_MESSAGE_TEMPLATE.format(message=message)
+        print(log)
+        return log
 
 class Prompts: 
     COMMON_PROMPT_TEMPLATE = "{message}: "
@@ -26,6 +36,9 @@ class Prompts:
     USERNAME_PROMPT = "Username"
     PASSWORD_PROMPT = "Password"
     SN_PROMPT = "Serial Number"
+    @staticmethod
+    def create_prompt(prompt):
+        return Prompts.COMMON_PROMPT_TEMPLATE.format(message=prompt)
 
 class Settings:
     VERIFY_SERVER_CERTIFICATE = False

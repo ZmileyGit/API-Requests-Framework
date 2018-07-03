@@ -103,5 +103,8 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-IDE
+# VS Code
 .vscode/
+
+# Cert Refresh
+*.pfx
