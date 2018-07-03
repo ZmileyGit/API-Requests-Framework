@@ -1,9 +1,9 @@
-from api.errors import UnexpectedResponseError,APIAuthenticationError
+from api.errors import UnexpectedResponseError,APIAuthenticationError,UnknownResourceError,InvalidRequestError
 from api.responses import Response
 from api.tools import EnumBooleanOperations
 from api.entities import Comparator,Operator
 from api.conditioners import HTTPCodeConditioner,APICEMTokenConditioner,APICEMInvalidCredentialsConditioner
-from api.conditioners import APICEMInvalidRequestConditioner
+from api.conditioners import APICEMInvalidRequestConditioner,UnknownResourceConditioner,UniqueResourceConditioner
 from abc import ABC,abstractmethod
 
 class ResponseHandler(ABC):
@@ -25,24 +25,37 @@ class ResponseHandler(ABC):
         raise UnexpectedResponseError()
 
 class InvalidRequestHandler(ResponseHandler):
+    def process(self,response):
+        raise InvalidRequestError()
     def is_processable(self,response):
         return HTTPCodeConditioner(400,next_conditioner=APICEMInvalidRequestConditioner()).process(response)
+
+class UnknownResourceHandler(ResponseHandler):
+    def process(self,response):
+        raise UnknownResourceError()
+    def is_processable(self,response):
+        return HTTPCodeConditioner(
+            404,
+            next_conditioner=UnknownResourceConditioner()
+        ).process(response)
+
+class UniqueResourceHandler(ResponseHandler):
+    def process(self,response):
+        return response.document['response']['id']
+    def is_processable(self,response):
+        return HTTPCodeConditioner(
+            200,
+            next_conditioner=UniqueResourceConditioner()
+        ).process(response)
 
 class TokenResponseHandler(ResponseHandler):
     @staticmethod
     def handler_chain():
         return InvalidCredentialsHandler(
-            SuccessfulTokenRetrievalHandler()
+            InvalidRequestHandler(
+                SuccessfulTokenRetrievalHandler()
+            )
         )
-
-class InvalidCredentialsHandler(TokenResponseHandler):
-    def process(self,response):
-        raise APIAuthenticationError()
-    def is_processable(self,response):
-        return HTTPCodeConditioner(
-            401,
-            next_conditioner=APICEMInvalidCredentialsConditioner()
-        ).process(response)
 
 class SuccessfulTokenRetrievalHandler(TokenResponseHandler):
     def process(self,response):
@@ -51,6 +64,15 @@ class SuccessfulTokenRetrievalHandler(TokenResponseHandler):
         return HTTPCodeConditioner(
             200,
             next_conditioner=APICEMTokenConditioner()
+        ).process(response)
+
+class InvalidCredentialsHandler(TokenResponseHandler):
+    def process(self,response):
+        raise APIAuthenticationError()
+    def is_processable(self,response):
+        return HTTPCodeConditioner(
+            401,
+            next_conditioner=APICEMInvalidCredentialsConditioner()
         ).process(response)
 
 class ValidationResponseHandler(ResponseHandler):
