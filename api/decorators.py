@@ -2,7 +2,7 @@ from api.constants import StringTemplates,Headers as HeaderNames,Settings
 from api.validators import APIC_EMTokenValidator
 from api.generators import APIC_EMTokenGenerator
 from api.builders import RequestBuilder
-from api.entities import Credentials,Server,Headers,Queries
+from api.entities import Credentials,Server,Headers,Queries,CertificateCheck
 from abc import abstractmethod
 import base64
 
@@ -94,9 +94,9 @@ class APIC_EMDecorator(CredentialsDecorator):
     def verify_token(self):
         valid_token = False
         if self.token:
-            valid_token = APIC_EMTokenValidator(self.server).validate(self.token,ssl_context=self.context)
+            valid_token = APIC_EMTokenValidator(self.server).validate(self.token,ssl_context=self.context,certificate_check=CertificateCheck.CUSTOM)
         if not valid_token:
-            self.token = APIC_EMTokenGenerator(self.server,self.credentials).generate(ssl_context=self.context)
+            self.token = APIC_EMTokenGenerator(self.server,self.credentials).generate(ssl_context=self.context,certificate_check=CertificateCheck.CUSTOM)
     def authentication(self):
         self.verify_token()
         self.headers.add_header(

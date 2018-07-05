@@ -1,3 +1,5 @@
+from api.entities import CertificateCheck
+
 class Messages:
     WELCOME_MESSAGE = "Manual Certificate Renewal Script"
     APIC_EM_DATA_COLLECTION_MESSAGE = "Collecting APIC-EM's Basic Data"
@@ -9,7 +11,7 @@ class Messages:
     SUCCESSFUL_AUTHENTICATION_MESSAGE = 'Assigned token -> {token}'
     SEARCHING_DEVICE_SN_MESSAGE = 'Searching device with Serial Number -> {serial_number}'
     DEVICE_FOUND_MESSAGE = 'Found {device}'
-    TRUST_POINT_FOUND_MESSAGE = 'Found trust point -> {trustpoint_id}'
+    TRUST_POINT_FOUND_MESSAGE = 'Trust point found -> {trustpoint_id}'
     DELETING_TRUSTPOINT_MESSAGE = 'Deleting trust point -> {trustpoint_id}'
     CREATING_TRUSTPOINT_MESSAGE = 'Creating new trust point for {device}'
     NO_TRUST_POINT_FOUND_MESSAGE = 'No trust point found for {device}'
@@ -24,4 +26,4 @@ class Prompts:
     SN_PROMPT = "Serial Number"
 
 class Settings:
-    VERIFY_SERVER_CERTIFICATE = False
+    VERIFY_SERVER_CERTIFICATE = CertificateCheck.IGNORE

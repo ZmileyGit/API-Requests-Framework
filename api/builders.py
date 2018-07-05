@@ -1,6 +1,6 @@
 from abc import ABC,abstractmethod
 from api.requests import Request,TextRequest,JSONRequest
-from api.entities import Headers,Queries,Server,HTTPMethod
+from api.entities import Headers,Queries,Server,HTTPMethod,CertificateCheck
 from api.constants import Settings,Headers as HeaderNames,ContentTypes,StringTemplates
 from ssl import create_default_context,Purpose,CERT_NONE,CERT_REQUIRED
 import json
@@ -11,26 +11,28 @@ class RequestBuilder(ABC):
         self.resource = Settings.DEFAULT_RESOURCE_PATH
         self.headers = Headers.instance()
         self.queries = Queries.instance()
-        self.method = HTTPMethod.GET.value
+        self.method = HTTPMethod.GET
         self.data = None
-        self._context = create_default_context(Purpose.SERVER_AUTH)
-        self.certificate_check = True
+        self.context = create_default_context(Purpose.SERVER_AUTH)
+        self.certificate_check = CertificateCheck.VALIDATE
     def reset(self):
         self.resource = Settings.DEFAULT_RESOURCE_PATH
         self.headers = Headers.instance()
         self.queries = Queries.instance()
-        self.method = HTTPMethod.GET.value
+        self.method = HTTPMethod.GET
         self.data = None
-        self._context = create_default_context(Purpose.SERVER_AUTH)
-        self.certificate_check = True
-    @property
-    def context(self):
-        return self._context
-    def _prepare_context(self):
-        self._context.check_hostname = self.certificate_check
-        self._context.verify_mode = CERT_REQUIRED if self.certificate_check else CERT_NONE
+    def reset_context(self):
+        self.context = create_default_context(Purpose.SERVER_AUTH)
+        self.certificate_check = CertificateCheck.VALIDATE
+    def prepare_context(self):
+        if self.certificate_check == CertificateCheck.IGNORE:
+            self.context.check_hostname = False
+            self.context.verify_mode = CERT_NONE
+        elif self.certificate_check == CertificateCheck.VALIDATE and self.certificate_check != CertificateCheck.CUSTOM:
+            self.context.check_hostname = True
+            self.context.verify_mode = CERT_REQUIRED
     def season(self):
-        self._prepare_context()
+        self.prepare_context()
     @abstractmethod
     def request(self):
         pass    

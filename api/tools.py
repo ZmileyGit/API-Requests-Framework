@@ -24,8 +24,8 @@ class RequestTools:
 from getpass import getpass
 
 class Logger:
-    ERROR_MESSAGE_TEMPLATE = "\n|{message}|\n"
-    COMMON_MESSAGE_TEMPLATE = '+ {message}\n'
+    ERROR_MESSAGE_TEMPLATE = "- {message}"
+    COMMON_MESSAGE_TEMPLATE = '+ {message}'
     _INSTANCE = None
     @staticmethod
     def instance():

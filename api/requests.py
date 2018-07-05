@@ -32,7 +32,7 @@ class Request:
             self.url,
             data=self.data,
             headers=self.headers.as_dict(),
-            method=self.method
+            method=str(self.method)
         )
     def success(self,data:HTTPResponse) -> dict:
         return {

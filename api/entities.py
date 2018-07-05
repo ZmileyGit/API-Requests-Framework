@@ -11,6 +11,8 @@ class HTTPMethod(Enum):
     GET = "GET"
     PUT = "PUT"
     DELETE = "DELETE"
+    def __str__(self):
+        return self.value
 
 class Operator(Enum):
     AND = 'AND'
@@ -23,6 +25,11 @@ class Comparator(Enum):
     GT = 'GT'
     LTE = 'LTE'
     GTE = 'GTE'
+
+class CertificateCheck(Enum):
+    VALIDATE = "Validate Server's Certificate"
+    IGNORE = "Ignore Server's Certificate"
+    CUSTOM = 'Custom SSL Context'
 
 class Server:
     def __init__(self,protocol:str,ip:str,port:int):
