@@ -12,7 +12,7 @@ credentials = Credentials(username,password)
 
 builder = JSONRequestBuilder(server)
 builder = BasicAuthDecorator(builder,credentials)
-builder.resource = "/webacs/api/v4/data/Devices"
+builder.resource = "/webacs/api/v1/data/Devices"
 builder.certificate_check = CertificateCheck.IGNORE
 builder.queries.add_query(".full","true")
 request = builder.build()
