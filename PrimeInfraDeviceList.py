@@ -1,5 +1,5 @@
 import getpass
-from api.entities import HTTPSServer,Credentials
+from api.entities import HTTPSServer,Credentials,CertificateCheck
 from api.builders import JSONRequestBuilder
 from api.decorators import BasicAuthDecorator
 
@@ -13,7 +13,7 @@ credentials = Credentials(username,password)
 builder = JSONRequestBuilder(server)
 builder = BasicAuthDecorator(builder,credentials)
 builder.resource = "/webacs/api/v4/data/Devices"
-builder.certificate_check = False
+builder.certificate_check = CertificateCheck.IGNORE
 builder.queries.add_query(".full","true")
 request = builder.build()
 response = request.send()

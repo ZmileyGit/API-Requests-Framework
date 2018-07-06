@@ -7,6 +7,7 @@ from api.errors import APIAuthenticationError,APIError,InvalidRequestError
 from api.errors import UnexpectedResponseError,UnknownResourceError
 from api.tools import Logger,Prompter
 from api.dao.device import DeviceDAO
+from api.dao.trustpoint import TrustpointDAO
 from api.cert_refresh.constants import Settings,Prompts,Messages
 from ipaddress import ip_address,IPv4Address,IPv6Address
 import getpass
@@ -44,13 +45,14 @@ builder = APIC_EMDecorator(builder,credentials)
 builder.token = token
 builder.certificate_check = Settings.VERIFY_SERVER_CERTIFICATE
 
+device_dao = DeviceDAO(builder)
 device = None
 while not device:
     serial_number = prompter.input(Prompts.SN_PROMPT)
     serial_number = serial_number.strip()
     try:
         logger.log_message(Messages.SEARCHING_DEVICE_SN_MESSAGE.format(serial_number=serial_number))
-        device = DeviceDAO(builder).get_by_serial_number(serial_number)
+        device = device_dao.get_by_serial_number(serial_number)
     except UnknownResourceError:
         logger.log_error(Messages.UNKNOWN_DEVICE.format(serial_number=serial_number))
     except InvalidRequestError:
@@ -58,24 +60,24 @@ while not device:
     else:
         logger.log_message(Messages.DEVICE_FOUND_MESSAGE.format(device=device))
 
-builder.reset()
-builder.resource = '/api/v1/trust-point/serial-number/{serial_number}'.format(serial_number=serial_number)
-builder.method = HTTPMethod.GET
-request = builder.build()
-logger.log_message(Messages.SEARCHING_TRUST_POINT_MESSAGE.format(device=device))
-response = request.send()
-trustpoint = UniqueResourceHandler().handle_response(response,"")
+
+trustpoint_dao = TrustpointDAO(builder)
+trustpoint = None
+try:
+    logger.log_message(Messages.SEARCHING_TRUST_POINT_MESSAGE.format(device=device))
+    trustpoint = trustpoint_dao.get_by_serial_number(device.serial_number)
+except (UnknownResourceError,InvalidRequestError):
+    logger.log_message(Messages.NO_TRUST_POINT_FOUND_MESSAGE.format(device=device))
+else:
+    logger.log_message(Messages.TRUST_POINT_FOUND_MESSAGE.format(trustpoint_id=trustpoint.id))
 
 if trustpoint:
-    logger.log_message(Messages.TRUST_POINT_FOUND_MESSAGE.format(trustpoint_id=trustpoint))
     builder.reset()
-    builder.resource= '/api/v1/trust-point/{trustpoint_id}'.format(trustpoint_id=trustpoint)
+    builder.resource= '/api/v1/trust-point/{trustpoint_id}'.format(trustpoint_id=trustpoint.id)
     builder.method = HTTPMethod.DELETE
     request = builder.build()
-    logger.log_message(Messages.DELETING_TRUSTPOINT_MESSAGE.format(trustpoint_id=trustpoint))
+    logger.log_message(Messages.DELETING_TRUSTPOINT_MESSAGE.format(trustpoint_id=trustpoint.id))
     response = request.send()
-else:
-    logger.log_message(Messages.NO_TRUST_POINT_FOUND_MESSAGE.format(device=device))
 
 builder.reset()
 builder.resource = '/api/v1/trust-point'
@@ -91,21 +93,22 @@ request = builder.build()
 logger.log_message(Messages.CREATING_TRUSTPOINT_MESSAGE.format(device=device))
 response = request.send()
 
-builder.reset()
-builder.resource = '/api/v1/trust-point/serial-number/{serial_number}'.format(serial_number=serial_number)
-builder.method = HTTPMethod.GET
-request = builder.build()
-logger.log_message(Messages.SEARCHING_TRUST_POINT_MESSAGE.format(device=device))
-response = request.send()
-trustpoint = UniqueResourceHandler().handle_response(response,"")
+trustpoint = None
+try:
+    logger.log_message(Messages.SEARCHING_TRUST_POINT_MESSAGE.format(device=device))
+    trustpoint = trustpoint_dao.get_by_serial_number(device.serial_number)
+except (UnknownResourceError,InvalidRequestError):
+    logger.log_message(Messages.NO_TRUST_POINT_FOUND_MESSAGE.format(device=device))
+else:
+    logger.log_message(Messages.TRUST_POINT_FOUND_MESSAGE.format(trustpoint_id=trustpoint.id))
 
 if trustpoint:
-    logger.log_message(Messages.TRUST_POINT_FOUND_MESSAGE.format(trustpoint_id=trustpoint))
+    logger.log_message(Messages.TRUST_POINT_FOUND_MESSAGE.format(trustpoint_id=trustpoint.id))
     builder.reset()
-    builder.resource = '/api/v1/trust-point/{trustpoint_id}/config'.format(trustpoint_id=trustpoint)
+    builder.resource = '/api/v1/trust-point/{trustpoint_id}/config'.format(trustpoint_id=trustpoint.id)
     builder.method = HTTPMethod.GET
     request = builder.build()
-    logger.log_message(Messages.TRUSTPOINT_CONFIGURATION_MESSAGE.format(trustpoint_id=trustpoint))
+    logger.log_message(Messages.TRUSTPOINT_CONFIGURATION_MESSAGE.format(trustpoint_id=trustpoint.id))
     response = request.send()
     config = response.document['response']
     pkcs12_url = config['pkcs12Url']
