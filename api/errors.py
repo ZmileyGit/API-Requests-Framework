@@ -12,3 +12,6 @@ class InvalidRequestError(APIError):
 
 class UnknownResourceError(APIError):
     pass
+
+class TaskTimeoutError(APIError):
+    pass

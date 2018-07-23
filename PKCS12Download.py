@@ -1,14 +1,13 @@
 from api.builders import JSONRequestBuilder,GenericRequestBuilder
-from api.handlers import UniqueResourceHandler
-from api.generators import APIC_EMTokenGenerator
-from api.decorators import APIC_EMDecorator
 from api.entities import HTTPSServer,Credentials,HTTPMethod
 from api.errors import APIAuthenticationError,APIError,InvalidRequestError
 from api.errors import UnexpectedResponseError,UnknownResourceError
 from api.tools import Logger,Prompter
-from api.dao.device import DeviceDAO
-from api.dao.trustpoint import TrustpointDAO
 from api.cert_refresh.constants import Settings,Prompts,Messages
+from api.apic_em.generators import APIC_EMTokenGenerator
+from api.apic_em.decorators import APIC_EMDecorator
+from api.apic_em.dao.device import DeviceDAO
+from api.apic_em.dao.trustpoint import TrustpointDAO
 from ipaddress import ip_address,IPv4Address,IPv6Address
 import getpass
 
@@ -72,26 +71,16 @@ else:
     logger.log_message(Messages.TRUST_POINT_FOUND_MESSAGE.format(trustpoint_id=trustpoint.id))
 
 if trustpoint:
-    builder.reset()
-    builder.resource= '/api/v1/trust-point/{trustpoint_id}'.format(trustpoint_id=trustpoint.id)
-    builder.method = HTTPMethod.DELETE
-    request = builder.build()
     logger.log_message(Messages.DELETING_TRUSTPOINT_MESSAGE.format(trustpoint_id=trustpoint.id))
-    response = request.send()
+    trustpoint_dao.delete_by_serial_number(device.serial_number)
 
-builder.reset()
-builder.resource = '/api/v1/trust-point'
-builder.method = HTTPMethod.POST
-builder.data = {
-    "entityName": device.hostname,
-    "serialNumber": device.serial_number,
-    "platformId": device.platform_id,
-    "trustProfileName": "sdn-network-infra-iwan",
-    "controllerIpAddress": server.ip
-}
-request = builder.build()
-logger.log_message(Messages.CREATING_TRUSTPOINT_MESSAGE.format(device=device))
-response = request.send()
+trustpoint_dao.create_trustpoint(
+    device.hostname,
+    device.serial_number,
+    device.platform_id,
+    trust_profile="sdn-network-infra-iwan",
+    controller=server.ip
+)
 
 trustpoint = None
 try:
@@ -103,7 +92,6 @@ else:
     logger.log_message(Messages.TRUST_POINT_FOUND_MESSAGE.format(trustpoint_id=trustpoint.id))
 
 if trustpoint:
-    logger.log_message(Messages.TRUST_POINT_FOUND_MESSAGE.format(trustpoint_id=trustpoint.id))
     builder.reset()
     builder.resource = '/api/v1/trust-point/{trustpoint_id}/config'.format(trustpoint_id=trustpoint.id)
     builder.method = HTTPMethod.GET

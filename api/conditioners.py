@@ -5,7 +5,7 @@ from abc import ABC,abstractmethod
 
 class Conditioner(ABC):
     def __init__(self,next_conditioner=None,operator:Operator=Operator.AND):
-        self.next_conditioner = None
+        self.next_conditioner = next_conditioner
         self.operator = operator
     def process(self,response):
         result = self.condition(response)
@@ -35,32 +35,3 @@ class HTTPCodeConditioner(ComparingConditioner):
 class JSONConditioner(Conditioner):
     def condition(self,response:Response):
         return response.document
-
-class APICEMConditioner(JSONConditioner):
-    def condition(self,response:Response):
-        return super().condition(response) and 'response' in response.document
-
-class APICEMTokenConditioner(APICEMConditioner):
-    def condition(self,response:Response):
-        return super().condition(response) and 'serviceTicket' in response.document['response']
-
-class UniqueResourceConditioner(APICEMConditioner):
-    def condition(self,response):
-        return super().condition(response) and 'id' in response.document['response']
-
-class APICEMErrorConditioner(APICEMConditioner):
-    def condition(self,response):
-        return super().condition(response) and 'errorCode' in response.document['response']
-
-class APICEMInvalidRequestConditioner(APICEMErrorConditioner):
-    def condition(self,response):
-        return super().condition(response) and response.document['response']['errorCode'] == 'Bad request'
-
-class UnknownResourceConditioner(APICEMErrorConditioner):
-    def condition(self,response):
-        return super().condition(response) and response.document['response']['errorCode'] == 'Not found'
-
-class APICEMInvalidCredentialsConditioner(APICEMErrorConditioner):
-    def condition(self,response):
-        return super().condition(response) and response.document['response']['errorCode'] == 'INVALID_CREDENTIALS'
-

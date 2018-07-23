@@ -19,7 +19,3 @@ class Settings:
     DEFAULT_ENCODING = 'UTF-8'
     DEFAULT_HEADER_ENCODING = 'ISO-8859-1'
     DEFAULT_RESOURCE_PATH = '/'
-
-class APIC_EM_Settings:
-    DEFAULT_TOKEN_VALIDATION_RESOURCE = "/api/v1/ticket/attribute/idletimeout"
-    TICKET_URI = "/api/v1/ticket"

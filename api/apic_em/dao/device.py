@@ -1,8 +1,9 @@
 from api.dao.base import DAO
-from api.model.device import Device,DeviceFactory
+from api.conditioners import HTTPCodeConditioner
 from api.entities import HTTPMethod
-from api.handlers import ResponseHandler,UnknownResourceHandler,InvalidRequestHandler
-from api.conditioners import UniqueResourceConditioner,HTTPCodeConditioner
+from api.apic_em.model.device import Device,DeviceFactory
+from api.apic_em.handlers import ResponseHandler,UnknownResourceHandler,InvalidRequestHandler
+from api.apic_em.conditioners import UniqueResourceConditioner
 
 class DeviceDAO(DAO):
     BY_SERIAL_NUMBER = '/api/v1/network-device/serial-number/{serial_number}'
